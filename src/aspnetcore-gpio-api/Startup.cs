@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using aspnetcore_gpio.Commands;
+using aspnetcore_gpio.States;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -26,7 +28,11 @@ namespace aspnetcore_gpio
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddSingleton<CommandsService>();
+            services.AddSingleton<GpioChangeCommandHandler>();
+            services.AddSingleton<GpiosState>();
+            services.AddSingleton<GpioChangesState>();
+            
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

@@ -68,13 +68,17 @@ namespace aspnetcore_gpio.Controllers
                             changed.Enabled,
                             changed.Complete);
 
+            //this should then give event  "Upate State Event "
 
 
             await Task.Yield();
 
+            //this should be listening for that pub sub style
             _command.Command(new GpioChangeCommand() { CommandData = changed });
 
 
+            //this is then the eventaul consistency - this should listen to something
+            // from the actual domain to know all is done 
              _commandState.State = _commandState.State.UpdateState(
                             changed.ChangeId,
                             gpioChangeEnabled.NewOutputState,

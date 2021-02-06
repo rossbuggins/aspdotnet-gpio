@@ -49,6 +49,7 @@ namespace aspnetcore_gpio.Controllers
               if(gpio==null)
                 return new NotFoundObjectResult(new {message="Invalid gpio number"});
 
+                
            return new OkObjectResult(gpio);
         }
     }

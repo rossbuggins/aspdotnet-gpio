@@ -12,7 +12,7 @@ namespace aspnetcore_gpio.Controllers
     public partial class GpioController
     {
 
-        [HttpGet("{number}/stateChanges")]
+        [HttpGet("{number}/stateChangeRequests")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<GpioChange>))]
         public IActionResult GetGpioChanges()
         {
@@ -21,7 +21,7 @@ namespace aspnetcore_gpio.Controllers
              .Select(_x => new GpioChange(_x.Id, _x.Number, _x.State, _x.Enabled, _x.Complete)));
         }
 
-        [HttpGet("{number}/stateChanges/{id}")]
+        [HttpGet("{number}/stateChangeRequests/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GpioChange))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult GetGpioChange(int number, Guid id)
@@ -35,7 +35,7 @@ namespace aspnetcore_gpio.Controllers
             return new OkObjectResult(r);
         }
 
-        [HttpPut("{number}/stateChanges/{id}")]
+        [HttpPut("{number}/stateChangeRequests/{id}")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(GpioChange))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PutGpioChange(
@@ -88,7 +88,7 @@ namespace aspnetcore_gpio.Controllers
                changed);
         }
 
-        [HttpPost("{number}/stateChanges")]
+        [HttpPost("{number}/stateChangeRequests")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(GpioChange))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
 

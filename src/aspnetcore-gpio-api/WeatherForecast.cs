@@ -2,14 +2,13 @@ using System;
 
 namespace aspnetcore_gpio
 {
-    public class WeatherForecast
+    public record Gpio
     {
-        public DateTime Date { get; set; }
-
-        public int TemperatureC { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-
-        public string Summary { get; set; }
+        public Gpio(int number)
+        {
+            this.Number = number;
+        }
+       public int Number{get;set;}
     }
 }
+

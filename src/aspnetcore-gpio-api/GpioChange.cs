@@ -9,7 +9,10 @@ namespace aspnetcore_gpio
  public record UpdateGpioChange(bool NewOutputState, bool Enabled);
 
 
-     public record NewGpioChange([Required] bool NewOutputState);
+     public record NewGpioChange(
+         [Display(Name = "New Output State")]
+         [Required(ErrorMessage="New output state is required.")] 
+         bool ? NewOutputState);
 
 }
 

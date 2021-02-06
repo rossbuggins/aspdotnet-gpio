@@ -96,11 +96,12 @@ namespace aspnetcore_gpio.Controllers
             [FromRoute] int number,
             [FromBody] NewGpioChange gpioChange)
         {
+
             if (_state.State.Gpios.Where(_x => _x.Number == number).SingleOrDefault() == null)
                 return new NotFoundObjectResult(new { message = "Invalid gpio number" });
 
             var changeId = Guid.NewGuid();
-            var change = new GpioChange(changeId, number, gpioChange.NewOutputState, false, false);
+            var change = new GpioChange(changeId, number, gpioChange.NewOutputState.Value, false, false);
 
             _commandState.State = _commandState.State.AddState(
                 change.ChangeId,

@@ -8,22 +8,31 @@ using aspnetcore_gpio.States;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Query;
+using Microsoft.AspNet.OData.Routing;
+using static Microsoft.AspNet.OData.Query.AllowedQueryOptions;
+using static Microsoft.AspNetCore.Http.StatusCodes;
+using Microsoft.OData;
 
 namespace aspnetcore_gpio.Controllers
 {
-    [ApiController]
-    [Route("gpios")]
-    [Produces(MediaTypeNames.Application.Json)]
-    [Consumes(MediaTypeNames.Application.Json)]
-    public partial class GpioController : ControllerBase
-    {   
-        private readonly ILogger<GpioController> _logger;
-        private readonly CommandsService<GpioChangeCommand,GpioChange> _command;
+
+    /// <summary>
+    /// Gpio Controller. This is test stuff.
+    /// </summary>
+    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
+    [Page(MaxTop = 100)]
+    public partial class GpiosController : ODataController
+    {
+        private readonly ILogger<GpiosController> _logger;
+        private readonly CommandsService<GpioChangeCommand, GpioChange> _command;
 
         GpiosStateStorage _state;
         GpioChangesState _commandState;
-        public GpioController(ILogger<GpioController> logger,
-            CommandsService<GpioChangeCommand,GpioChange> command,
+        public GpiosController(ILogger<GpiosController> logger,
+            CommandsService<GpioChangeCommand, GpioChange> command,
             GpiosStateStorage state,
             GpioChangesState commandState)
         {
@@ -33,27 +42,27 @@ namespace aspnetcore_gpio.Controllers
             _commandState = commandState;
         }
 
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type=typeof(IEnumerable<Gpio>))]
-        public IActionResult GetGpios()
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(IQueryable<Gpio>), Status200OK)]
+        [EnableQuery(
+            MaxTop = 100, 
+            AllowedQueryOptions = Select | Top | Skip | Count | OrderBy | Filter,
+            AllowedOrderByProperties = "number")]
+        public IQueryable<Gpio> Get()
         {
-            return 
-            new OkObjectResult(
-                _state.Domain.State.Gpios.Select(_x => new Gpio(_x.Number, _x.State)));
+            var data = _state.Domain.State.Gpios
+                .Select(_x => new Gpio(_x.Number, _x.State))
+                .ToList();
+
+            return data.AsQueryable();
         }
 
-        [HttpGet("{number}", Name="GetGpio")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type=typeof(Gpio))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult GetGpio(int number)
-        {
-            var gpio = 
-            _state.Domain.State.Gpios.Where(_x=>_x.Number == number).Select(_x => new Gpio(_x.Number, _x.State)).SingleOrDefault();
-              if(gpio==null)
-                return new NotFoundObjectResult(new {message="Invalid gpio number"});
+        // GET ~/api/v1/orders/{key}?api-version=1.0
+        [HttpGet("{key:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Gpio))]
+        public IActionResult Get(int key, ODataQueryOptions<Gpio> options) =>
+            Ok(new Gpio(1, true));
 
-                
-           return Ok(gpio);
-        }
+
     }
 }

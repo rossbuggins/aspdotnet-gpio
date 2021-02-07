@@ -35,7 +35,7 @@ namespace aspnetcore_gpio.Controllers
             return Ok(r);
         }
 
-        [HttpDelete("{number}/stateChangeRequests/{id}")]
+        [HttpDelete("{number}/stateChangeRequests/{id}", Name="DeleteStateChangeRequest")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GpioChange))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteGpioChange(

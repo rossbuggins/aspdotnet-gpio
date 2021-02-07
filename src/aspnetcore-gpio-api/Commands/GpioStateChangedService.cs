@@ -38,6 +38,9 @@ namespace aspnetcore_gpio.Commands
 
           var a = new client.GpioApiClient("http://localhost:5000/", new HttpClient());
            var ab = await a.GpiosAsync();
+
+           
+           
         }
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)

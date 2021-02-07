@@ -32,7 +32,31 @@ namespace aspnetcore_gpio.Controllers
             if (r == null)
                 return new NotFoundObjectResult(new { message = "Invalid gpio number" });
 
-            return new OkObjectResult(r);
+            return Ok(r);
+        }
+
+        [HttpDelete("{number}/stateChangeRequests/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GpioChange))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteGpioChange(
+            [FromRoute] int number,
+            [FromRoute] Guid id)
+        {
+            var gpioChange = _commandState.State.GpioChanges.Where(_x => _x.Id == id).SingleOrDefault();
+
+            if (gpioChange == null)
+                return new NotFoundObjectResult(new { message = "Invalid gpio number" });
+
+            if (gpioChange.Complete)
+                return new BadRequestObjectResult(new { message = "Cannot update after complete" });
+
+       
+
+            _commandState.State = _commandState.State.RemoveState(
+                             gpioChange.Id);
+
+            await Task.Yield();
+            return Ok(gpioChange);
         }
 
         [HttpPut("{number}/stateChangeRequests/{id}")]

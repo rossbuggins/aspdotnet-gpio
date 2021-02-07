@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using aspnetcore_gpio.Commands;
 using aspnetcore_gpio.States;
@@ -12,15 +13,17 @@ namespace aspnetcore_gpio.Controllers
 {
     [ApiController]
     [Route("gpios")]
+    [Produces(MediaTypeNames.Application.Json)]
+    [Consumes(MediaTypeNames.Application.Json)]
     public partial class GpioController : ControllerBase
     {   
         private readonly ILogger<GpioController> _logger;
-        private readonly CommandsService _command;
+        private readonly CommandsService<GpioChangeCommand,GpioChange> _command;
 
         GpiosState _state;
         GpioChangesState _commandState;
         public GpioController(ILogger<GpioController> logger,
-            CommandsService command,
+            CommandsService<GpioChangeCommand,GpioChange> command,
             GpiosState state,
             GpioChangesState commandState)
         {
@@ -50,7 +53,7 @@ namespace aspnetcore_gpio.Controllers
                 return new NotFoundObjectResult(new {message="Invalid gpio number"});
 
                 
-           return new OkObjectResult(gpio);
+           return Ok(gpio);
         }
     }
 }

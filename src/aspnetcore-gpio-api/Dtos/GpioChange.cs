@@ -6,8 +6,6 @@ namespace aspnetcore_gpio
 
     public record GpioChange(Guid ChangeId, int Number,bool NewOutputState, bool Enabled, bool Complete);
 
- public record UpdateGpioChange(bool NewOutputState, bool Enabled);
-
 
      public record NewGpioChange(
          [Display(Name = "New Output State")]

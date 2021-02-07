@@ -11,6 +11,20 @@ namespace aspnetcore_gpio.Domain
   
     public record GpioChangesDomain (IEnumerable<GpioChangeDomain> GpioChanges)
     {
+         public GpioChangesDomain RemoveState(Guid id)
+        {
+            var gpio = GpioChanges.Where(_x => id == _x.Id).Single();
+
+              if(gpio.Complete==true)
+                throw new Exception("Cannot update after complete");
+
+           
+            return new GpioChangesDomain(
+                GpioChanges
+                .Where(_x => id != _x.Id)
+                .OrderBy(_x=>_x.Id));
+        }
+
         public GpioChangesDomain AddState(Guid id, int number, bool state)
         {
             var gpioUpdated = new GpioChangeDomain(id, number, state, false, false);

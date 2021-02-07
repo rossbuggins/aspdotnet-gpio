@@ -28,11 +28,15 @@ namespace aspnetcore_gpio
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<CommandsService>();
-            services.AddSingleton<GpioChangeCommandHandler>();
+            services.AddSingleton<RandomGenerator>();
             services.AddSingleton<GpiosState>();
             services.AddSingleton<GpioChangesState>();
-            
+        
+            services.AddCommandHandlers(o=>
+            {
+                o.Add<GpioChangeCommand, GpioChange, GpioChangeCommandHandler>();
+            });
+           
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

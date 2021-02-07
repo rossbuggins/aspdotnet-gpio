@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -10,14 +9,8 @@ using aspnetcore_gpio.Domain;
 
 namespace aspnetcore_gpio.States
 {
-  public class GpiosState
+    public class GpiosState
   {
       public GpiosDomain State{get;set;} = new GpiosDomain(Enumerable.Range(1,20).Select(_x => new GpioDomain(_x, false)));
-  }
-
-    public class GpioChangesState
-  {
- 
-      public GpioChangesDomain State{get;set;} = new GpioChangesDomain(new List<GpioChangeDomain>());
   }
 }

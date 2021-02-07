@@ -1,10 +1,7 @@
 namespace aspnetcore_gpio.Commands
 {
-    public interface ICommand
-    {
-
-    }
-    public interface ICommand<T>:ICommand
+  
+    public interface ICommand<out T>
     {
         T CommandData{get;}
     }

@@ -10,7 +10,7 @@ namespace aspnetcore_gpio
      public record NewGpioChange(
          [Display(Name = "New Output State")]
          [Required(ErrorMessage="New output state is required.")] 
-         bool ? NewOutputState);
+         bool ? NewOutputState, int ? Number);
 
 }
 

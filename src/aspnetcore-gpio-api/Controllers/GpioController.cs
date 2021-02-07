@@ -20,11 +20,11 @@ namespace aspnetcore_gpio.Controllers
         private readonly ILogger<GpioController> _logger;
         private readonly CommandsService<GpioChangeCommand,GpioChange> _command;
 
-        GpiosState _state;
+        GpiosStateStorage _state;
         GpioChangesState _commandState;
         public GpioController(ILogger<GpioController> logger,
             CommandsService<GpioChangeCommand,GpioChange> command,
-            GpiosState state,
+            GpiosStateStorage state,
             GpioChangesState commandState)
         {
             _logger = logger;
@@ -39,7 +39,7 @@ namespace aspnetcore_gpio.Controllers
         {
             return 
             new OkObjectResult(
-                _state.State.Gpios.Select(_x => new Gpio(_x.Number, _x.State)));
+                _state.Domain.State.Gpios.Select(_x => new Gpio(_x.Number, _x.State)));
         }
 
         [HttpGet("{number}", Name="GetGpio")]
@@ -48,7 +48,7 @@ namespace aspnetcore_gpio.Controllers
         public IActionResult GetGpio(int number)
         {
             var gpio = 
-            _state.State.Gpios.Where(_x=>_x.Number == number).Select(_x => new Gpio(_x.Number, _x.State)).SingleOrDefault();
+            _state.Domain.State.Gpios.Where(_x=>_x.Number == number).Select(_x => new Gpio(_x.Number, _x.State)).SingleOrDefault();
               if(gpio==null)
                 return new NotFoundObjectResult(new {message="Invalid gpio number"});
 

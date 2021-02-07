@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 namespace aspnetcore_gpio.Commands
 
 {
+
     public class CommandHandlerBackgroundService<T,U> : BackgroundService
         where T : ICommand<U>
     {

@@ -106,7 +106,7 @@ namespace aspnetcore_gpio.Controllers
              _commandState.State = _commandState.State.UpdateState(
                             changed.ChangeId,
                             gpioChangeEnabled.NewOutputState,
-                            gpioChangeEnabled.Enabled,
+                        gpioChangeEnabled.Enabled,
                             true);
 
 
@@ -125,7 +125,7 @@ namespace aspnetcore_gpio.Controllers
             [FromBody] NewGpioChange gpioChange)
         {
 
-            if (_state.State.Gpios.Where(_x => _x.Number == number).SingleOrDefault() == null)
+            if (_state.Domain.State.Gpios.Where(_x => _x.Number == number).SingleOrDefault() == null)
                 return new NotFoundObjectResult(new { message = "Invalid gpio number" });
 
             var changeId = Guid.NewGuid();

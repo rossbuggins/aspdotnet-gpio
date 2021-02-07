@@ -9,9 +9,9 @@ using aspnetcore_gpio.Commands;
 namespace aspnetcore_gpio.Domain
 {
   
-    public record GpioChangesDomain (IEnumerable<GpioChangeDomain> GpioChanges)
+    public record GpioChangesData (IEnumerable<GpioChangeDomain> GpioChanges)
     {
-         public GpioChangesDomain RemoveState(Guid id)
+         public GpioChangesData RemoveState(Guid id)
         {
             var gpio = GpioChanges.Where(_x => id == _x.Id).Single();
 
@@ -19,23 +19,23 @@ namespace aspnetcore_gpio.Domain
                 throw new Exception("Cannot update after complete");
 
            
-            return new GpioChangesDomain(
+            return new GpioChangesData(
                 GpioChanges
                 .Where(_x => id != _x.Id)
                 .OrderBy(_x=>_x.Id));
         }
 
-        public GpioChangesDomain AddState(Guid id, int number, bool state)
+        public GpioChangesData AddState(Guid id, int number, bool state)
         {
             var gpioUpdated = new GpioChangeDomain(id, number, state, false, false);
 
-            return new GpioChangesDomain(
+            return new GpioChangesData(
                 GpioChanges
                 .Append(gpioUpdated)
                 .OrderBy(_x=>_x.Id));
         }
 
-        public GpioChangesDomain UpdateState(Guid id, bool state, bool enabled, bool complete)
+        public GpioChangesData UpdateState(Guid id, bool state, bool enabled, bool complete)
         {
             var gpio = GpioChanges.Where(_x => id == _x.Id).Single();
 
@@ -49,7 +49,7 @@ namespace aspnetcore_gpio.Domain
 
             var gpioUpdated = gpio with {State = state, Enabled = enabled, Complete = complete};
 
-            return new GpioChangesDomain(
+            return new GpioChangesData(
                 GpioChanges.Where(_x => _x.Id!=id)
                 .Append(gpioUpdated)
                 .OrderBy(_x=>_x.Id));

@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "src/aspnetcore-gpio-api"
+		},
+		{
+			"path": "src/client"
 		}
 	],
 	"settings": {}

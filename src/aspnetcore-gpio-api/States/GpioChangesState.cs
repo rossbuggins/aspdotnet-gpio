@@ -5,6 +5,6 @@ namespace aspnetcore_gpio.States
 {
     public class GpioChangesState
     {
-        public GpioChangesDomain State { get; set; } = new GpioChangesDomain(new List<GpioChangeDomain>());
+        public GpioChangesData State { get; set; } = new GpioChangesData(new List<GpioChangeDomain>());
     }
 }

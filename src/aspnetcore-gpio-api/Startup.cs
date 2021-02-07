@@ -29,7 +29,7 @@ namespace aspnetcore_gpio
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<RandomGenerator>();
-            services.AddSingleton<GpiosState>();
+            services.AddSingleton<GpiosStateStorage>();
             services.AddSingleton<GpioChangesState>();
         
             services.AddCommandHandlers(o=>
@@ -54,7 +54,7 @@ namespace aspnetcore_gpio
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "aspnetcore_gpio v1"));
             }
 
-            app.UseHttpsRedirection();
+           // app.UseHttpsRedirection();
 
             app.UseRouting();
 

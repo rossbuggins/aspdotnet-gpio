@@ -9,8 +9,8 @@ using aspnetcore_gpio.Domain;
 
 namespace aspnetcore_gpio.States
 {
-    public class GpiosState
+    public class GpiosStateStorage
   {
-      public GpiosDomain State{get;set;} = new GpiosDomain(Enumerable.Range(1,20).Select(_x => new GpioDomain(_x, false)));
+      public GpiosDomain Domain {get;set;} = new GpiosDomain();
   }
 }

@@ -21,6 +21,7 @@ namespace System
         {
             var o = new CommandHanderOptions(services);
             services.AddSingleton<CommandFactory>();
+            services.AddHostedService<GpioStateChangedService>();
             services.AddSingleton(typeof(CommandStore<,>), typeof(CommandStore<,>));
             services.AddSingleton(typeof(CommandsService<,>), typeof(CommandsService<,>));
             options(o);

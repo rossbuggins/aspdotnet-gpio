@@ -6,15 +6,15 @@ namespace aspnetcore_gpio.Commands
     public class GpioChangeCommandHandler : 
         ICommandHandler<GpioChange>
     {
-        GpiosState _state;
-        public GpioChangeCommandHandler (GpiosState state)
+        GpiosStateStorage _state;
+        public GpioChangeCommandHandler (GpiosStateStorage state)
         {
             _state =state;
         }
 
         public void Handle(ICommand<GpioChange> command)
         {
-             _state.State = _state.State.UpdateState(
+              _state.Domain.UpdateState(
                 command.CommandData.Number, 
                 command.CommandData.NewOutputState);
         }

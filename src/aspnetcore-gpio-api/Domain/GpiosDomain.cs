@@ -23,17 +23,17 @@ namespace aspnetcore_gpio.Domain
                     Enumerable.Range(1, 20).Select(_x => new GpioDomainData(_x, false))));
         }
 
-        private void UpdateStateTo(GpiosDomainData from, GpiosDomainData to)
+        private void UpdateDomainStateAndHistoryTo(GpiosDomainData from, GpiosDomainData to)
         {
             if (from == gpiosDomainState)
             {
                 gpiosDomainState = to;
                 history.Push(to);
-            
-            OnGpiosDomainStateUpdated(
-                new GpiosDomainStateUpdatedEventArgs(from, to));
+
+                OnGpiosDomainStateUpdated(
+                    new GpiosDomainStateUpdatedEventArgs(from, to));
             }
-            
+
         }
 
         protected void OnGpiosDomainStateUpdated(GpiosDomainStateUpdatedEventArgs args)
@@ -45,10 +45,25 @@ namespace aspnetcore_gpio.Domain
 
         public void UpdateState(int number, bool state)
         {
-            var from = gpiosDomainState;
-            var to = from.UpdateState(number, state);
-            UpdateStateTo(from, to);
+            ProcessStateChange(from=>
+            {
+                CheckExists(from, number);
+                return from.UpdateState(number, state);
+            });
+        }
 
+        public void ProcessStateChange (Func<GpiosDomainData,GpiosDomainData> x)
+        {
+            var from = gpiosDomainState;
+            var to = x(from);
+            UpdateDomainStateAndHistoryTo(from, to);
+        }
+
+        public void CheckExists(GpiosDomainData state, int gpioNumber)
+        {
+            var gpio = state.Gpios.Where(_x => gpioNumber == _x.Number).SingleOrDefault();
+            if (gpio == null)
+                throw new Exception("Gpio not found");
         }
 
 

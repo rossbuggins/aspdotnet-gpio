@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "src/client"
+		},
+		{
+			"path": "dbg-env/baseDebug"
 		}
 	],
 	"settings": {}

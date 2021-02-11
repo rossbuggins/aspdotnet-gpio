@@ -14,6 +14,7 @@ using Microsoft.AspNet.OData.Routing;
 using static Microsoft.AspNet.OData.Query.AllowedQueryOptions;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 using Microsoft.OData;
+using MassTransit;
 
 namespace aspnetcore_gpio.Controllers
 {
@@ -32,17 +33,20 @@ namespace aspnetcore_gpio.Controllers
         private readonly ILogger<MyGpiosController> _logger;
         private readonly CommandsService<GpioChangeCommand, GpioChange> _command;
 
+       IPublishEndpoint _publishEndpoint;
         GpiosStateStorage _state;
         GpioChangesState _commandState;
         public MyGpiosController(ILogger<MyGpiosController> logger,
             CommandsService<GpioChangeCommand, GpioChange> command,
             GpiosStateStorage state,
-            GpioChangesState commandState)
+            GpioChangesState commandState,
+            IPublishEndpoint publishEndpoint)
         {
             _logger = logger;
             _command = command;
             _state = state;
             _commandState = commandState;
+            _publishEndpoint = publishEndpoint;
         }
 
         [Produces("application/json")]

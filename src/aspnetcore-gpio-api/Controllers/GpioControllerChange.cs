@@ -24,7 +24,8 @@ using Microsoft.AspNet.OData.Routing;
 using static Microsoft.AspNet.OData.Query.AllowedQueryOptions;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 using Microsoft.OData;
-
+using MassTransit;
+using System.Threading;
 
 namespace aspnetcore_gpio.Controllers
 {
@@ -33,19 +34,21 @@ namespace aspnetcore_gpio.Controllers
     {
          private readonly ILogger<GpioStateChangeRequestsController> _logger;
         private readonly CommandsService<GpioChangeCommand, GpioChange> _command;
-
-       GpiosStateStorage _state;
+ IPublishEndpoint _publishEndpoint;
+        GpiosStateStorage _state;
         GpioChangesState _commandState;
 
         public GpioStateChangeRequestsController(ILogger<GpioStateChangeRequestsController> logger,
             CommandsService<GpioChangeCommand, GpioChange> command,
             GpiosStateStorage state,
-            GpioChangesState commandState)
+            GpioChangesState commandState,
+             IPublishEndpoint publishEndpoint)
         {
             _logger = logger;
             _command = command;
             _state = state;
             _commandState = commandState;
+            _publishEndpoint = publishEndpoint;
         }
 
         [HttpGet()]
@@ -176,8 +179,16 @@ namespace aspnetcore_gpio.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(GpioChange))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PostGpioChange(
-            [FromBody] NewGpioChange gpioChange)
+            [FromBody] NewGpioChange gpioChange, CancellationToken ct)
         {
+            while (!ct.IsCancellationRequested)
+            {
+                await _publishEndpoint.Publish<ChangeGpioCommandMessage>(new
+                {
+                    Value = new ChangeGpioCommandMessage() { Number = gpioChange.Number.Value }
+                });
+            }
+
             var number = gpioChange.Number.Value;
 
             if (_state.Domain.State.Gpios.Where(_x => _x.Number == number).SingleOrDefault() == null)
@@ -197,6 +208,28 @@ namespace aspnetcore_gpio.Controllers
                 "GetGpioChange",
                 new { number = change.Number, id = change.ChangeId },
                 change);
+        }
+    }
+
+
+    public class ChangeGpioCommandMessage
+    {
+        public int Number{ get; set; }
+    }
+
+       class EventConsumer :
+        IConsumer<ChangeGpioCommandMessage>
+    {
+        ILogger<EventConsumer> _logger;
+
+        public EventConsumer(ILogger<EventConsumer> logger)
+        {
+            _logger = logger;
+        }
+
+        public async Task Consume(ConsumeContext<ChangeGpioCommandMessage> context)
+        {
+            _logger.LogInformation("Number: {Value}", context.Message.Number);
         }
     }
 }

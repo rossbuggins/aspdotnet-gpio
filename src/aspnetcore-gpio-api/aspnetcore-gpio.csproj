@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="JsonDiffPatch.Net" Version="2.3.0" />
+    <PackageReference Include="MassTransit.AspNetCore" Version="7.1.5" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="7.1.5" />
 
  <ProjectReference Include="..\..\..\aspnet-api-versioning\src\Microsoft.AspNetCore.OData.Versioning.ApiExplorer\Microsoft.AspNetCore.OData.Versioning.ApiExplorer.csproj" />
 

@@ -23,6 +23,12 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.IO;
 using System.Reflection;
 
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
+using MassTransit;
+
 namespace aspnetcore_gpio
 {
     public class Startup
@@ -37,27 +43,49 @@ namespace aspnetcore_gpio
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-              services.AddControllers();
-            services.AddApiVersioning( options => 
-            
+
+            services.AddHealthChecks();
+
+            services.Configure<HealthCheckPublisherOptions>(options =>
             {
-                options.AssumeDefaultVersionWhenUnspecified = true;
-                options.ReportApiVersions = true;
+                options.Delay = TimeSpan.FromSeconds(2);
+                options.Predicate = (check) => check.Tags.Contains("ready");
             });
+
+            services.AddMassTransit(x =>
+         {
+             x.AddConsumer<EventConsumer>();
+             x.SetKebabCaseEndpointNameFormatter();
+
+             x.UsingRabbitMq((context, cfg) =>
+             {
+                 cfg.ConfigureEndpoints(context);
+             });
+         });
+
+            services.AddMassTransitHostedService();
+
+            services.AddControllers();
+            services.AddApiVersioning(options =>
+
+           {
+               options.AssumeDefaultVersionWhenUnspecified = true;
+               options.ReportApiVersions = true;
+           });
             services.AddOData().EnableApiVersioning();
 
             services.AddODataApiExplorer(
                             options =>
                             {
-                    // add the versioned api explorer, which also adds IApiVersionDescriptionProvider service
-                    // note: the specified format code will format the version as "'v'major[.minor][-status]"
-                    options.GroupNameFormat = "'v'VVV";
+                                // add the versioned api explorer, which also adds IApiVersionDescriptionProvider service
+                                // note: the specified format code will format the version as "'v'major[.minor][-status]"
+                                options.GroupNameFormat = "'v'VVV";
 
-                    // note: this option is only necessary when versioning by url segment. the SubstitutionFormat
-                    // can also be used to control the format of the API version in route templates
-                    options.SubstituteApiVersionInUrl = true;
+                                // note: this option is only necessary when versioning by url segment. the SubstitutionFormat
+                                // can also be used to control the format of the API version in route templates
+                                options.SubstituteApiVersionInUrl = true;
 
-               
+
                             });
 
             services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
@@ -95,7 +123,7 @@ namespace aspnetcore_gpio
             {
                 app.UseDeveloperExceptionPage();
 
-              
+
 
                 // app.UseSwagger();
                 //app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "aspnetcore_gpio v1"));
@@ -103,31 +131,39 @@ namespace aspnetcore_gpio
 
             // app.UseHttpsRedirection();
 
-       
+
             app.UseRouting();
 
-   app.UseEndpoints(endpoints =>
-            {
-                  endpoints.MapControllers();
-               // endpoints.MapControllers();
-                endpoints.Count();
-                endpoints.MapVersionedODataRoute("odata", "api", modelBuilder);
-            });
+            app.UseEndpoints(endpoints =>
+                     {
 
-  app.UseSwagger();
-                app.UseSwaggerUI(
-                    options =>
-                    {
+                         endpoints.MapHealthChecks("/health/ready", new HealthCheckOptions()
+                         {
+                             Predicate = (check) => check.Tags.Contains("ready"),
+                         });
+
+                         endpoints.MapHealthChecks("/health/live", new HealthCheckOptions());
+
+                         endpoints.MapControllers();
+                         // endpoints.MapControllers();
+                         endpoints.Count();
+                         endpoints.MapVersionedODataRoute("odata", "api", modelBuilder);
+                     });
+
+            app.UseSwagger();
+            app.UseSwaggerUI(
+                options =>
+                {
                     // build a swagger endpoint for each discovered API version
                     foreach (var description in provider.ApiVersionDescriptions)
-                        {
-                            options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
-                        }
-                    });
+                    {
+                        options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
+                    }
+                });
 
             app.UseAuthorization();
 
-         
+
         }
 
         static string XmlCommentsFilePath
@@ -141,17 +177,17 @@ namespace aspnetcore_gpio
         }
     }
 
-// public class GpioDtoClass
-// {
-//     public GpioDtoClass()
-//     {
+    // public class GpioDtoClass
+    // {
+    //     public GpioDtoClass()
+    //     {
 
-//     }
+    //     }
 
-//     public GpioDtoClass(int number)
-//     {
-//         this.Key = number;
-//     }
-//     public int Key{get;set;}
-// }
+    //     public GpioDtoClass(int number)
+    //     {
+    //         this.Key = number;
+    //     }
+    //     public int Key{get;set;}
+    // }
 }

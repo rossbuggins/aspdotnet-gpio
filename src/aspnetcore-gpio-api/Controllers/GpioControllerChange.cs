@@ -30,11 +30,11 @@ using System.Threading;
 namespace aspnetcore_gpio.Controllers
 {
 
-    public partial class GpioStateChangeRequestsController :ODataController
+    public partial class GpioStateChangeRequestsController : ODataController
     {
-         private readonly ILogger<GpioStateChangeRequestsController> _logger;
+        private readonly ILogger<GpioStateChangeRequestsController> _logger;
         private readonly CommandsService<GpioChangeCommand, GpioChange> _command;
- IPublishEndpoint _publishEndpoint;
+        IPublishEndpoint _publishEndpoint;
         GpiosStateStorage _state;
         GpioChangesState _commandState;
 
@@ -54,21 +54,21 @@ namespace aspnetcore_gpio.Controllers
         [HttpGet()]
         [ODataRoute("Gpios({key})/GpioStateChangeRequests({changeId})")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<GpioChange>))]
-         [EnableQuery(
+        [EnableQuery(
             AllowedQueryOptions = Select)]
-        public IQueryable<GpioChange> GetChange([FromODataUri]int key, [FromODataUri] Guid changeId)
+        public IQueryable<GpioChange> GetChange([FromODataUri] int key, [FromODataUri] Guid changeId)
         {
             return new List<GpioChange>().AsQueryable();
 
         }
 
-     
-      [Produces("application/json")]
+
+        [Produces("application/json")]
         [ProducesResponseType(typeof(IQueryable<GpioChange>), Status200OK)]
         [EnableQuery(
-            MaxTop = 100, 
-            AllowedQueryOptions = Select | Top | Skip | Count | OrderBy | Filter,
-            AllowedOrderByProperties = "number")]
+              MaxTop = 100,
+              AllowedQueryOptions = Select | Top | Skip | Count | OrderBy | Filter,
+              AllowedOrderByProperties = "number")]
         public IQueryable<GpioChange> Get()
         {
             var data =
@@ -91,12 +91,12 @@ namespace aspnetcore_gpio.Controllers
             .AsQueryable();
 
             //if (r == null)
-           //     return new NotFoundObjectResult(new { message = "Invalid gpio number" });
+            //     return new NotFoundObjectResult(new { message = "Invalid gpio number" });
 
-         return SingleResult.Create<GpioChange>(r);
+            return SingleResult.Create<GpioChange>(r);
         }
 
-        [HttpDelete("{key:uuid}", Name="DeleteStateChangeRequest")]
+        [HttpDelete("{key:uuid}", Name = "DeleteStateChangeRequest")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GpioChange))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteGpioChange(
@@ -110,7 +110,7 @@ namespace aspnetcore_gpio.Controllers
             if (gpioChange.Complete)
                 return new BadRequestObjectResult(new { message = "Cannot update after complete" });
 
-       
+
 
             _commandState.State = _commandState.State.RemoveState(
                              gpioChange.Id);
@@ -123,7 +123,7 @@ namespace aspnetcore_gpio.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(GpioChange))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PutGpioChange(
-            [FromODataUri]  Guid key,
+            [FromODataUri] Guid key,
             [FromBody] UpdateGpioChange gpioChangeEnabled)
         {
             var gpioChange = _commandState.State.GpioChanges.Where(_x => _x.Id == key).SingleOrDefault();
@@ -134,14 +134,14 @@ namespace aspnetcore_gpio.Controllers
             if (gpioChange.Complete)
                 return new BadRequestObjectResult(new { message = "Cannot update after complete" });
 
-            if (gpioChange.Enabled && gpioChangeEnabled.Enabled==false)
+            if (gpioChange.Enabled && gpioChangeEnabled.Enabled == false)
                 return new BadRequestObjectResult(new { message = "Cannot disable after enabling" });
 
 
             var changed = new GpioChange(
-                gpioChange.Id, 
-                gpioChange.Number, 
-                gpioChangeEnabled.NewOutputState, 
+                gpioChange.Id,
+                gpioChange.Number,
+                gpioChangeEnabled.NewOutputState,
                 gpioChangeEnabled.Enabled,
                 false);
 
@@ -162,11 +162,11 @@ namespace aspnetcore_gpio.Controllers
 
             //this is then the eventaul consistency - this should listen to something
             // from the actual domain to know all is done 
-             _commandState.State = _commandState.State.UpdateState(
-                            changed.ChangeId,
-                            gpioChangeEnabled.NewOutputState,
-                        gpioChangeEnabled.Enabled,
-                            true);
+            _commandState.State = _commandState.State.UpdateState(
+                           changed.ChangeId,
+                           gpioChangeEnabled.NewOutputState,
+                       gpioChangeEnabled.Enabled,
+                           true);
 
 
             return AcceptedAtAction(
@@ -183,9 +183,14 @@ namespace aspnetcore_gpio.Controllers
         {
             while (!ct.IsCancellationRequested)
             {
-                await _publishEndpoint.Publish<ChangeGpioCommandMessage>(new
+                await _publishEndpoint.Publish<IChangeGpioCommandMessage>(new
                 {
-                    Value = new ChangeGpioCommandMessage() { Number = gpioChange.Number.Value }
+                    Value = new
+                    {
+                        __Header_X_B3_TraceId = "abc",
+                        __TimeToLive = 15000,
+                        Number = gpioChange.Number.Value
+                    }
                 });
             }
 
@@ -211,14 +216,13 @@ namespace aspnetcore_gpio.Controllers
         }
     }
 
-
-    public class ChangeGpioCommandMessage
+    public interface IChangeGpioCommandMessage
     {
-        public int Number{ get; set; }
+        int Number { get; }
     }
 
-       class EventConsumer :
-        IConsumer<ChangeGpioCommandMessage>
+    class EventConsumer :
+     IConsumer<IChangeGpioCommandMessage>
     {
         ILogger<EventConsumer> _logger;
 
@@ -227,7 +231,7 @@ namespace aspnetcore_gpio.Controllers
             _logger = logger;
         }
 
-        public async Task Consume(ConsumeContext<ChangeGpioCommandMessage> context)
+        public async Task Consume(ConsumeContext<IChangeGpioCommandMessage> context)
         {
             _logger.LogInformation("Number: {Value}", context.Message.Number);
         }
